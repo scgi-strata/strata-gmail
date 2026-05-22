@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gmail CRM</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://apis.google.com/js/api.js" defer></script>
+  <script src="https://accounts.google.com/gsi/client" defer></script>
+</head>
+<body class="theme-light">
+
+  <!-- Auth screen (shown when not signed in) -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <h1>Gmail CRM</h1>
+      <p>Manage your inbox like a CRM — follow-ups, notes, contact history.</p>
+      <button id="sign-in-btn" class="btn-primary">Sign in with Google</button>
+    </div>
+  </div>
+
+  <!-- App shell (hidden until signed in) -->
+  <div id="app-shell" class="hidden">
+    <nav class="top-nav">
+      <span class="nav-logo">Gmail CRM</span>
+      <div class="nav-links">
+        <a href="#" class="nav-link active" data-view="dashboard">Dashboard</a>
+        <a href="#" class="nav-link" data-view="followups">Follow-ups</a>
+        <a href="#" class="nav-link" data-view="contacts">Contacts</a>
+      </div>
+      <div class="nav-actions">
+        <input id="search-input" type="text" placeholder="Search Gmail… (Enter)" class="search-input" />
+        <button id="theme-toggle" class="btn-icon" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        <button id="sign-out-btn" class="btn-text">Sign out</button>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div id="view-dashboard" class="view"></div>
+      <div id="view-followups" class="view hidden"></div>
+      <div id="view-contacts" class="view hidden"></div>
+    </main>
+
+    <!-- Thread detail panel (slide-in from right) -->
+    <div id="thread-panel" class="panel hidden"></div>
+    <!-- Contact detail panel -->
+    <div id="contact-panel" class="panel hidden"></div>
+    <div id="panel-overlay" class="panel-overlay hidden"></div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
