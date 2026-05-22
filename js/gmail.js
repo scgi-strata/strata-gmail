@@ -85,3 +85,38 @@ function findTextPart(part) {
   }
   return null;
 }
+
+/** Moves a thread to Gmail Trash. */
+export async function trashThread(threadId) {
+  try {
+    await gapi.client.gmail.users.threads.trash({ userId: 'me', id: threadId });
+  } catch {
+    showToast('Failed to move to trash', 'error');
+  }
+}
+
+/** Permanently deletes a thread. Cannot be undone. */
+export async function deleteThreadPermanently(threadId) {
+  try {
+    await gapi.client.gmail.users.threads.delete({ userId: 'me', id: threadId });
+  } catch {
+    showToast('Failed to delete permanently', 'error');
+  }
+}
+
+/** Lists threads in Gmail Trash. Returns array of { thread, messages }. */
+export async function listTrashThreads(maxResults = 50) {
+  try {
+    const listRes = await gapi.client.gmail.users.threads.list({
+      userId: 'me',
+      labelIds: ['TRASH'],
+      maxResults,
+    });
+    const threads = listRes.result.threads || [];
+    const detailed = await Promise.all(threads.map(t => getThread(t.id)));
+    return detailed.filter(Boolean);
+  } catch {
+    showToast('Failed to load trash', 'error');
+    return [];
+  }
+}

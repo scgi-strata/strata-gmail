@@ -3,6 +3,7 @@ import { initTheme } from './theme.js';
 import { renderDashboard } from './dashboard.js';
 import { renderFollowups } from './followups.js';
 import { renderContacts } from './contacts.js';
+import { renderTrash } from './trash.js';
 import { searchThreads } from './gmail.js';
 import { parseThreadMeta, escapeHtml, formatDate } from './utils.js';
 import { openThreadPanel } from './thread-panel.js';
@@ -74,6 +75,7 @@ function navigateTo(view) {
   if (view === 'dashboard') renderDashboard();
   else if (view === 'followups') renderFollowups();
   else if (view === 'contacts') renderContacts();
+  else if (view === 'trash') renderTrash();
 }
 
 function showView(view) {

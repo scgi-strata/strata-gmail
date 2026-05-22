@@ -23,6 +23,17 @@ export function openThreadPanel(threadData) {
   panel.querySelector('#crm-status').addEventListener('change', saveDebounced);
   panel.querySelector('#crm-followup').addEventListener('change', saveDebounced);
   panel.querySelector('#crm-notes').addEventListener('input', saveDebounced);
+
+  panel.querySelector('#crm-trash-btn').addEventListener('click', async () => {
+    await import('./gmail.js').then(m => m.trashThread(threadData.id));
+    closeThreadPanel();
+    // Refresh dashboard if visible
+    const dash = document.getElementById('view-dashboard');
+    if (dash && !dash.classList.contains('hidden')) {
+      const { renderDashboard } = await import('./dashboard.js');
+      renderDashboard();
+    }
+  });
 }
 
 function buildPanelHTML(t) {
@@ -71,6 +82,7 @@ function buildPanelHTML(t) {
           <textarea id="crm-notes" class="crm-textarea" placeholder="Private notes...">${escapeHtml(crm.notes || '')}</textarea>
         </div>
         <p style="font-size:12px;color:var(--text-muted);margin-top:4px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
+        <button class="btn-trash" id="crm-trash-btn" style="margin-top:12px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
       </div>
     </div>`;
 }
