@@ -82,6 +82,7 @@ function buildPanelHTML(t) {
           <textarea id="crm-notes" class="crm-textarea" placeholder="Private notes...">${escapeHtml(crm.notes || '')}</textarea>
         </div>
         <p style="font-size:12px;color:var(--text-muted);margin-top:4px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
+        <p id="crm-save-indicator" style="font-size:11px;color:var(--status-closed-color);text-align:right;margin-top:4px;opacity:0;transition:opacity 0.3s"></p>
         <button class="btn-trash" id="crm-trash-btn" style="margin-top:12px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
       </div>
     </div>`;
@@ -90,6 +91,11 @@ function buildPanelHTML(t) {
 async function saveThreadCRM() {
   if (!currentThread) return;
   const panel = document.getElementById('thread-panel');
+
+  // Show saving indicator
+  const indicator = panel.querySelector('#crm-save-indicator');
+  if (indicator) { indicator.textContent = 'Saving…'; indicator.style.opacity = '1'; }
+
   await upsertThread({
     thread_id:      currentThread.id,
     contact_email:  currentThread.senderEmail,
@@ -98,12 +104,17 @@ async function saveThreadCRM() {
     follow_up_date: panel.querySelector('#crm-followup').value,
     notes:          panel.querySelector('#crm-notes').value,
   });
-  // Auto-create contact on first CRM interaction
   await upsertContact({
     email:          currentThread.senderEmail,
     name:           currentThread.sender,
     last_contacted: new Date().toISOString().slice(0, 10),
   });
+
+  // Show saved confirmation
+  if (indicator) {
+    indicator.textContent = 'Saved ✓';
+    setTimeout(() => { indicator.style.opacity = '0'; }, 2000);
+  }
 }
 
 export function closeThreadPanel() {
