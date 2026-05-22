@@ -1,4 +1,4 @@
-import { listInboxThreads, getUnreadCount } from './gmail.js';
+import { listInboxThreads, getUnreadCount, batchTrashThreads } from './gmail.js';
 import { readThreads } from './sheets.js';
 import { getUrgencyTier, formatDate, parseThreadMeta, escapeHtml } from './utils.js';
 import { openThreadPanel } from './thread-panel.js';
@@ -22,7 +22,7 @@ export async function renderDashboard() {
   const threads = inboxData.map(({ thread, messages }) => {
     const meta = parseThreadMeta(thread, messages);
     if (!meta) return null;
-    const crm  = crmMap[thread.id] || {};
+    const crm = crmMap[thread.id] || {};
     return { ...meta, crm, messages, tier: getUrgencyTier(crm.follow_up_date || '') };
   }).filter(Boolean);
 
@@ -52,10 +52,41 @@ export async function renderDashboard() {
       </div>
     </div>
     <div class="section-header">Priority Inbox</div>
+    <div id="inbox-batch-bar" class="batch-bar" style="display:none">
+      <span class="batch-count" id="inbox-batch-count">0 selected</span>
+      <button class="batch-action danger" id="inbox-batch-trash">Move to Trash</button>
+      <button class="batch-clear" id="inbox-batch-clear">Clear</button>
+    </div>
     <div class="thread-list" id="dashboard-list"></div>
   `;
 
   const list = document.getElementById('dashboard-list');
+  const batchBar = document.getElementById('inbox-batch-bar');
+  const batchCount = document.getElementById('inbox-batch-count');
+  const selected = new Set();
+
+  function updateBatchBar() {
+    if (selected.size > 0) {
+      batchBar.style.display = 'flex';
+      batchCount.textContent = `${selected.size} selected`;
+    } else {
+      batchBar.style.display = 'none';
+    }
+  }
+
+  document.getElementById('inbox-batch-clear').addEventListener('click', () => {
+    selected.clear();
+    list.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
+    updateBatchBar();
+  });
+
+  document.getElementById('inbox-batch-trash').addEventListener('click', async () => {
+    if (selected.size === 0) return;
+    const ids = [...selected];
+    batchBar.innerHTML = '<span style="color:white;font-size:13px">Moving to trash…</span>';
+    await batchTrashThreads(ids);
+    await renderDashboard();
+  });
 
   if (threads.length === 0) {
     list.innerHTML = '<div class="empty">No emails in inbox.</div>';
@@ -66,6 +97,7 @@ export async function renderDashboard() {
     const row = document.createElement('div');
     row.className = `thread-row${t.isUnread ? ' unread' : ''}`;
     row.innerHTML = `
+      <input type="checkbox" class="row-check" data-id="${escapeHtml(t.id)}" />
       <span class="thread-badge ${TIER_CLASS[t.tier]}">${TIER_LABEL[t.tier]}</span>
       <div class="thread-info">
         <div class="thread-sender">${escapeHtml(t.sender)}</div>
@@ -76,6 +108,13 @@ export async function renderDashboard() {
         <span class="thread-date">${formatDate(t.date)}</span>
       </div>
     `;
+    const cb = row.querySelector('.row-check');
+    cb.addEventListener('change', e => {
+      e.stopPropagation();
+      if (cb.checked) selected.add(t.id); else selected.delete(t.id);
+      updateBatchBar();
+    });
+    cb.addEventListener('click', e => e.stopPropagation());
     row.addEventListener('click', () => openThreadPanel(t));
     list.appendChild(row);
   });

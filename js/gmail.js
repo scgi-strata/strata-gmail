@@ -120,3 +120,13 @@ export async function listTrashThreads(maxResults = 50) {
     return [];
   }
 }
+
+/** Moves multiple threads to Trash in parallel. */
+export async function batchTrashThreads(threadIds) {
+  await Promise.all(threadIds.map(id => trashThread(id)));
+}
+
+/** Permanently deletes multiple threads in parallel. */
+export async function batchDeleteThreadsPermanently(threadIds) {
+  await Promise.all(threadIds.map(id => deleteThreadPermanently(id)));
+}
