@@ -23,6 +23,7 @@ export function openThreadPanel(threadData) {
   panel.querySelector('#crm-status').addEventListener('change', saveDebounced);
   panel.querySelector('#crm-followup').addEventListener('change', saveDebounced);
   panel.querySelector('#crm-notes').addEventListener('input', saveDebounced);
+  panel.querySelector('#crm-save-btn').addEventListener('click', saveThreadCRM);
 
   panel.querySelector('#crm-trash-btn').addEventListener('click', async () => {
     await import('./gmail.js').then(m => m.trashThread(threadData.id));
@@ -81,7 +82,10 @@ function buildPanelHTML(t) {
           <label class="crm-label" for="crm-notes">Notes</label>
           <textarea id="crm-notes" class="crm-textarea" placeholder="Private notes...">${escapeHtml(crm.notes || '')}</textarea>
         </div>
-        <p id="crm-save-indicator" style="font-size:11px;color:var(--status-closed-color);text-align:right;margin-top:4px;opacity:0;transition:opacity 0.3s"></p>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <button id="crm-save-btn" class="btn-primary" style="flex:1;padding:8px;font-size:13px">Save</button>
+          <p id="crm-save-indicator" style="font-size:11px;color:var(--status-closed-color);opacity:0;transition:opacity 0.3s;margin:0"></p>
+        </div>
         <button class="btn-trash" id="crm-trash-btn" style="margin-top:8px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
         <p style="font-size:12px;color:var(--text-muted);margin-top:10px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
       </div>
