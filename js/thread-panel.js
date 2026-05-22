@@ -88,6 +88,9 @@ function buildPanelHTML(t) {
         </div>
         <button class="btn-trash" id="crm-trash-btn" style="margin-top:8px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
         <p style="font-size:12px;color:var(--text-muted);margin-top:10px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
+        <a href="https://mail.google.com/mail/#all/${escapeHtml(t.id)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:13px;color:var(--accent);text-decoration:none;font-weight:500">
+          ↗ Open in Gmail
+        </a>
       </div>
     </div>`;
 }
