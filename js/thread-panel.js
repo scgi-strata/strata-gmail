@@ -25,6 +25,29 @@ export function openThreadPanel(threadData) {
   panel.querySelector('#crm-notes').addEventListener('input', saveDebounced);
   panel.querySelector('#crm-save-btn').addEventListener('click', saveThreadCRM);
 
+  // Wire Add related thread button
+  panel.querySelector('#crm-related-add').addEventListener('click', () => {
+    const input = panel.querySelector('#crm-related-input');
+    const url = input.value.trim();
+    if (!url) return;
+    const list = panel.querySelector('#crm-related-list');
+    const item = document.createElement('div');
+    item.className = 'related-thread-item';
+    item.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:4px 8px';
+    item.innerHTML = `
+      <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="flex:1;font-size:12px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none">↗ ${escapeHtml(url)}</a>
+      <button class="remove-related" data-url="${escapeHtml(url)}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1">×</button>
+    `;
+    item.querySelector('.remove-related').addEventListener('click', () => item.remove());
+    list.appendChild(item);
+    input.value = '';
+  });
+
+  // Wire remove buttons on existing items
+  panel.querySelectorAll('.remove-related').forEach(btn => {
+    btn.addEventListener('click', () => btn.closest('.related-thread-item').remove());
+  });
+
   panel.querySelector('#crm-trash-btn').addEventListener('click', async () => {
     await import('./gmail.js').then(m => m.trashThread(threadData.id));
     closeThreadPanel();
@@ -79,6 +102,20 @@ function buildPanelHTML(t) {
           <input id="crm-followup" type="date" class="crm-input" value="${escapeHtml(crm.follow_up_date || '')}" />
         </div>
         <div class="crm-field">
+          <label class="crm-label">Related Gmail Threads</label>
+          <div id="crm-related-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px">
+            ${(crm.related_threads || '').split('|').filter(u => u.trim()).map(url => `
+              <div class="related-thread-item" style="display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:4px 8px">
+                <a href="${escapeHtml(url.trim())}" target="_blank" rel="noopener" style="flex:1;font-size:12px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none">↗ ${escapeHtml(url.trim())}</a>
+                <button class="remove-related" data-url="${escapeHtml(url.trim())}" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 2px;line-height:1">×</button>
+              </div>`).join('')}
+          </div>
+          <div style="display:flex;gap:6px">
+            <input id="crm-related-input" class="crm-input" placeholder="Paste Gmail thread URL…" style="flex:1;font-size:12px" />
+            <button id="crm-related-add" style="padding:6px 10px;background:var(--accent);color:var(--btn-primary-text);border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap">Add</button>
+          </div>
+        </div>
+        <div class="crm-field">
           <label class="crm-label" for="crm-notes">Notes</label>
           <textarea id="crm-notes" class="crm-textarea" placeholder="Private notes...">${escapeHtml(crm.notes || '')}</textarea>
         </div>
@@ -103,13 +140,19 @@ async function saveThreadCRM() {
   const indicator = panel.querySelector('#crm-save-indicator');
   if (indicator) { indicator.textContent = 'Saving…'; indicator.style.opacity = '1'; }
 
+  const relatedUrls = [...panel.querySelectorAll('.related-thread-item a')]
+    .map(a => a.getAttribute('href'))
+    .filter(Boolean)
+    .join('|');
+
   await upsertThread({
-    thread_id:      currentThread.id,
-    contact_email:  currentThread.senderEmail,
-    subject:        currentThread.subject,
-    status:         panel.querySelector('#crm-status').value,
-    follow_up_date: panel.querySelector('#crm-followup').value,
-    notes:          panel.querySelector('#crm-notes').value,
+    thread_id:       currentThread.id,
+    contact_email:   currentThread.senderEmail,
+    subject:         currentThread.subject,
+    status:          panel.querySelector('#crm-status').value,
+    follow_up_date:  panel.querySelector('#crm-followup').value,
+    notes:           panel.querySelector('#crm-notes').value,
+    related_threads: relatedUrls,
   });
   await upsertContact({
     email:          currentThread.senderEmail,

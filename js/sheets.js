@@ -2,10 +2,10 @@ import { CONFIG } from './config.js';
 import { showToast, upsertRow } from './utils.js';
 
 const CONTACTS_RANGE = 'Contacts!A:E';
-const THREADS_RANGE  = 'Threads!A:G';
+const THREADS_RANGE  = 'Threads!A:H';
 
 const CONTACTS_FIELDS = ['email', 'name', 'company', 'notes', 'last_contacted'];
-const THREADS_FIELDS  = ['thread_id', 'contact_email', 'subject', 'status', 'follow_up_date', 'notes', 'updated_at'];
+const THREADS_FIELDS  = ['thread_id', 'contact_email', 'subject', 'status', 'follow_up_date', 'notes', 'updated_at', 'related_threads'];
 
 function rowsToObjects(fields, rows) {
   return rows.map(row => Object.fromEntries(fields.map((f, i) => [f, row[i] ?? ''])));
