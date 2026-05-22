@@ -81,9 +81,9 @@ function buildPanelHTML(t) {
           <label class="crm-label" for="crm-notes">Notes</label>
           <textarea id="crm-notes" class="crm-textarea" placeholder="Private notes...">${escapeHtml(crm.notes || '')}</textarea>
         </div>
-        <p style="font-size:12px;color:var(--text-muted);margin-top:4px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
         <p id="crm-save-indicator" style="font-size:11px;color:var(--status-closed-color);text-align:right;margin-top:4px;opacity:0;transition:opacity 0.3s"></p>
-        <button class="btn-trash" id="crm-trash-btn" style="margin-top:12px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
+        <button class="btn-trash" id="crm-trash-btn" style="margin-top:8px;width:100%;padding:8px;background:var(--overdue-bg);color:var(--overdue-color);border:1px solid var(--overdue-border);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500">Move to Trash</button>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:10px">From: ${escapeHtml(t.sender)} &lt;${escapeHtml(t.senderEmail)}&gt;</p>
       </div>
     </div>`;
 }
